@@ -1,0 +1,19 @@
+{
+  "name": "youtube_music_app",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.ts",
+  "devDependencies": {
+    "electron": "^24.1.3"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron ."
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "moment": "^2.29.4"
+  }
+}

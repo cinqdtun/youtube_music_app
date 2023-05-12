@@ -1,0 +1,164 @@
+html, body {
+    background-color: #3a3a3a;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+}
+
+.bottom-control-element{
+    margin: 10px;
+}
+
+.music-container{
+    width: 303px;
+    height: 70px;
+    margin: 15px;
+    background-color: #505050;
+    border-radius: 5px;
+    display: flex;
+}
+
+.thumbnail-music{
+    height: 50px;
+    width: 50px;
+    margin: 10px;
+    user-select: none;
+    -webkit-user-drag: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+.title-music-label{
+    margin-top: 10px;
+    margin-bottom: 0;
+    font-size: 16px;
+}
+
+.artist-label{
+    margin-top: 0;
+    margin-bottom: 0;
+    font-size: 12px;
+}
+
+.delete-button{
+     margin-right: 10px;
+     margin-bottom: 10px;
+     height: 18px;
+     width: 18px;
+     float: right;
+     background-image: url('ressources/trash_can.png');
+     background-position: center center;
+     background-repeat: no-repeat;
+     background-size: contain;
+     -webkit-user-select: none; /* Chrome/Safari/Opera */
+     -moz-user-select: none; /* Firefox */
+     -ms-user-select: none; /* Internet Explorer/Edge */
+     user-select: none;
+}
+
+.downloaded-checkmark{
+    margin-right: 10px;
+    margin-bottom: 10px;
+    height: 18px;
+    width: 18px;
+    float: right;
+    background-image: url('ressources/downloaded_checkmark.png');
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: contain;
+    -webkit-user-select: none; /* Chrome/Safari/Opera */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* Internet Explorer/Edge */
+    user-select: none;
+    visibility: hidden;
+}
+
+.delete-button:hover{
+    background-image: url('ressources/trash_can_hover.png');
+}
+
+.delete-button:after{
+    background-image: url('ressources/trash_can.png');
+}
+
+.musics-infos-container{
+    width: 100%;
+}
+
+#download-button{
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+#music-number-label{
+    color: white;
+    font-size: 12px;
+    margin: 20px;
+}
+
+#bottom-controls-div{
+}
+
+#search-controls{
+    position: absolute;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    width: 100%;
+    bottom: 0;
+}
+
+#download-controls{
+    position: absolute;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    visibility: hidden;
+    width: 100%;
+    bottom: 0;
+}
+
+#list-container{
+    width: 100%;
+    height: calc(100% - 56px);
+    position: fixed;
+}
+
+#list-container-scroll{
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    overflow-y: scroll;
+}
+
+#overlay-container-div{
+    width: 100%;
+    height: 100%;
+}
+
+#gradient-div{
+    pointer-events: none;
+    background: linear-gradient(to top, rgba(0, 0, 0, 15%), transparent);
+    bottom: 56px;
+    height: 40px;
+    width: calc(100% - 17px);
+    position: absolute;
+}
+
+#download-bar{
+    background-color: black;
+    height: 36px;
+    border-radius: 5px;
+    width: 100%;
+}
+
+#progress-bar{
+    width: 0;
+    height: 100%;
+    background-color: #36a8ff;
+    border-bottom-left-radius: 5px;
+    border-top-left-radius: 5px;
+}
+#cancel-button{
+}

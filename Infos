@@ -1,0 +1,1 @@
+yt-dlp.exe https://music.youtube.com/watch?v=B4EkwueekvI -x --audio-format mp3 --audio-quality 192K -o downloaded-musics/%(title)s.%(ext)s --ffmpeg-location "C:\Users\5dt1s\Downloads\bin"
