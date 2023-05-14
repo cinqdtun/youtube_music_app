@@ -2,10 +2,14 @@ window.addEventListener('load', () => {
     const {ipcRenderer} = require('electron');
     let isDownloading = false;
 
-    document.querySelector("#download-button").addEventListener('click', (event) => {
+    document.querySelector("#download-button").addEventListener('click', () => {
         if (!isDownloading) {
             ipcRenderer.send('download-request');
         }
+    });
+
+    document.querySelector("#cancel-button").addEventListener('click', () => {
+        ipcRenderer.send('cancel-download-request');
     });
 
     ipcRenderer.on('update-list', (event, list) => {
@@ -34,12 +38,12 @@ window.addEventListener('load', () => {
             musicsInfoContainer.appendChild(artistLabel);
             if(isDownloading){
                 let downloadedCheckMark = document.createElement('div');
-                downloadedCheckMark.setAttribute('class', 'downloaded-checkmark');
+                downloadedCheckMark.setAttribute('class', 'downloaded-checkmark-hidden');
                 musicsInfoContainer.appendChild(downloadedCheckMark);
             }else {
                 let deleteButton = document.createElement('div');
                 deleteButton.setAttribute('class', 'delete-button');
-                deleteButton.addEventListener('click', (event) => {
+                deleteButton.addEventListener('click', () => {
                     if (!isDownloading) {
                         const musicId = music.id;
                         ipcRenderer.send('delete-music', musicId);
@@ -50,10 +54,24 @@ window.addEventListener('load', () => {
             musicListContainer.appendChild(musicContainer);
         }
 
-        ipcRenderer.on('starting-downloading', (event) => {
+        ipcRenderer.on('starting-downloading', () => {
             isDownloading = true;
             document.querySelector("#search-controls").style.visibility = 'hidden';
             document.querySelector("#download-controls").style.visibility = 'visible';
+        });
+
+        ipcRenderer.on('finished-downloading', () => {
+            isDownloading = false;
+            document.querySelector("#search-controls").style.visibility = 'visible';
+            document.querySelector("#download-controls").style.visibility = 'hidden';
+            document.querySelector("#progress-bar").style.width = '0';
+        });
+
+        ipcRenderer.on('download-progression', (event, progress) => {
+            document.querySelector("#progress-bar").style.width = progress.downloaded / progress.total * 100 + '%';
+            const checkmarkElement = document.querySelector(`#list-container-scroll:nth-child(${progress.element}) > div > div`);
+            checkmarkElement.classList.remove('downloaded-checkmark-hidden');
+            checkmarkElement.setAttribute('class', 'downloaded-checkmark');
         });
     });
 });

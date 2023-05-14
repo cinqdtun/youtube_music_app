@@ -38,8 +38,16 @@ window.addEventListener('load', () => {
         }
     });
 
-    ipcRenderer.on('starting-downloading', (event) => {
+    ipcRenderer.on('starting-downloading', () => {
         isDownloading = true;
+        if(!adState) {
+            removeButton();
+            createButton();
+        }
+    });
+
+    ipcRenderer.on('finished-downloading', () => {
+        isDownloading = false;
         if(!adState) {
             removeButton();
             createButton();
@@ -60,7 +68,7 @@ window.addEventListener('load', () => {
                     artist: document.querySelector("#layout > ytmusic-player-bar > div.middle-controls.style-scope.ytmusic-player-bar > div.content-info-wrapper.style-scope.ytmusic-player-bar > span > span.subtitle.style-scope.ytmusic-player-bar > yt-formatted-string > :nth-child(1)").textContent,
                     link: document.querySelector("#movie_player > div.ytp-chrome-top > div.ytp-title > div > a").getAttribute('href')
                 };
-                ipcRenderer.send('add-music-playlist', music);
+                ipcRenderer.send('add-music-playlist', Buffer.from(JSON.stringify(music), 'utf-8').toString('base64'));
             })
         }else{
             addDownloadBtn.setAttribute('src', 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAABLUlEQVR4nO3dQQ6CMBRAwWo8NEfg1rpzB4kEmweZuYDC8ydNqzgAAOD+HntXuCzL22fgfOu6bt7354Wv65YEiREkRpAYQWJeB9/O7uqMr59XqSYkRpAYQWIEiREkRpAYQWIEiREkRpAYQWIEiREkRpCYo9vvFVvb25c9HjAhMYLECBIjSIwgMYLECBIjSIwgMYLECBIjSIwgMYLECBIjSIwgMYLEzD7CnfW79zNfZ+pxsAmJESRGkBhBYgSJmb3KOnvF4oty/JcgMYLECBIjSIwgMYLECBIjSIwgMYLECBIjSIwgMYLECBIjSIwgMYLEXP3hM7d7Br0JiREkRpAYQWIEiREkRpAYQWIEiREkRpAYQWIEiTm62+t/1v/EhMQIEiNIjCAxggAAAFONMT7yagq4sctKfAAAAABJRU5ErkJggg==');

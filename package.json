@@ -2,7 +2,7 @@
   "name": "youtube_music_app",
   "version": "1.0.0",
   "description": "",
-  "main": "app.ts",
+  "main": "app.js",
   "devDependencies": {
     "electron": "^24.1.3"
   },

@@ -57,7 +57,7 @@ html, body {
      user-select: none;
 }
 
-.downloaded-checkmark{
+.downloaded-checkmark-hidden{
     margin-right: 10px;
     margin-bottom: 10px;
     height: 18px;
@@ -72,6 +72,22 @@ html, body {
     -ms-user-select: none; /* Internet Explorer/Edge */
     user-select: none;
     visibility: hidden;
+}
+
+.downloaded-checkmark{
+    margin-right: 10px;
+    margin-bottom: 10px;
+    height: 18px;
+    width: 18px;
+    float: right;
+    background-image: url('ressources/downloaded_checkmark.png');
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: contain;
+    -webkit-user-select: none; /* Chrome/Safari/Opera */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* Internet Explorer/Edge */
+    user-select: none;
 }
 
 .delete-button:hover{
@@ -159,6 +175,4 @@ html, body {
     background-color: #36a8ff;
     border-bottom-left-radius: 5px;
     border-top-left-radius: 5px;
-}
-#cancel-button{
 }
