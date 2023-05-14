@@ -31,7 +31,8 @@ const createWindow = () => {
         minWidth: 1000,
         minHeight: 620,
         autoHideMenuBar: true,
-        show: false
+        show: false,
+        title: "Youtube Music Downloader"
     })
 
     const app_overlay = new BrowserView({
@@ -152,10 +153,26 @@ const createWindow = () => {
                     if (!fs.existsSync(folderPath)) {
                         fs.mkdirSync(folderPath);
                     }
+                    let shuffleIndex = [];
+                    let criticalError = false;
+                    const startIndex = appSettings.startIndex;
+                    appSettings.startIndex += musicList.length;
+                    MainUtils.saveConfig(appSettings);
+                    if(appSettings.attributeIndexation === 'random'){
+                        shuffleIndex = MainUtils.shuffleArray(0, musicList.length);
+                    }
                     for (let i = 0; i < musicList.length; i++) {
                         const music = musicList[i];
                         let tentatives = 0;
                         let downloaded = false;
+                        let index;
+                        if(appSettings.attributeIndexation === 'beginning'){
+                            index = i + startIndex
+                        }else if(appSettings.attributeIndexation === 'end'){
+                            index = musicList.length - 1 - i + startIndex;
+                        }else if(appSettings.attributeIndexation === 'random'){
+                            index = shuffleIndex[i] + startIndex;
+                        }
                         while (tentatives < 5 && !downloaded){
                             if(downloadCanceled){
                                 app_overlay.webContents.send('finished-downloading');
@@ -163,20 +180,25 @@ const createWindow = () => {
                                 youtube_player_view.webContents.send('finished-downloading');
                                 return;
                             }
-                            await MainUtils.downloadMusic(music.musicData.link, path.join(folderPath, `${music.musicData.title}-${music.musicData.artist}.mp3`)).then(() => {
+                            await MainUtils.downloadMusic(music.musicData.link, path.join(folderPath, `${index} ${music.musicData.title}-${music.musicData.artist}.mp3`)).then(() => {
                                 app_overlay.webContents.send('download-progression', {downloaded: i + 1, total: musicList.length, element: i + 1});
                                 downloaded = true;
                             }).catch((error) => {
-                                console.log(error);
+                                if(error.includes('This video is not available')){
+                                    dialog.showErrorBox('Unavailable video', 'Video not available. Skipping...');
+                                    tentatives = 5;
+                                    return;
+                                }
                                 tentatives++;
                                 if(tentatives === 5){
                                     dialog.showErrorBox('Error', 'An error occurred while downloading the music. Please try again later.');
                                     app_overlay.webContents.send('finished-downloading');
                                     app_overlay.webContents.send('update-list', musicList);
                                     youtube_player_view.webContents.send('finished-downloading');
-                                    return;
+                                    criticalError = true;
                                 }
                             });
+                            if(criticalError) return;
                         }
                     }
                     app_overlay.webContents.send('finished-downloading');
@@ -202,8 +224,8 @@ const createWindow = () => {
     });
 
     const devtools = new BrowserWindow();
-    app_overlay.webContents.setDevToolsWebContents(devtools.webContents);
-    app_overlay.webContents.openDevTools({mode: 'detach'});
+    youtube_player_view.webContents.setDevToolsWebContents(devtools.webContents);
+    youtube_player_view.webContents.openDevTools({mode: 'detach'});
 }
 
 app.whenReady().then(() => {

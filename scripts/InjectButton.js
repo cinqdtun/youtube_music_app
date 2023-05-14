@@ -8,24 +8,24 @@ window.addEventListener('load', () => {
     const observerBar = new MutationObserver((mutationsList, observerBar) => {
         if (!document.querySelector('html').classList.contains('inactive-player')) {
             observerBar.disconnect();
-            const observerAd = new MutationObserver((mutationsList) => {
+            const observerChanged = new MutationObserver((mutationsList) => {
                 for (const mutation of mutationsList) {
-                    if (mutation.type === "attributes" && mutation.attributeName === "is-advertisement_") {
-                        if (!document.querySelector("#layout > ytmusic-player-bar").hasAttribute("is-advertisement_")) {
-                            if (!parentButtonElement.querySelector('#addToDownloadList')) {
+                    if (mutation.type === "attributes" && mutation.attributeName === "href") {
+                        if (parentButtonElement.querySelector('#addToDownloadList')) {
+                            removeButton();
+                        }
+                        if (document.querySelector("#movie_player > div.ytp-chrome-top > div.ytp-title > div > a").getAttribute('href').includes('list')){
+                            if (!parentButtonElement.querySelector('#addToDownloadList') && document.querySelector("#layout > ytmusic-player-bar > div.middle-controls.style-scope.ytmusic-player-bar > div.content-info-wrapper.style-scope.ytmusic-player-bar > yt-formatted-string").textContent !== '') {
                                 createButton();
-                                adState = false;
                             }
+                            adState = false;
                         } else {
-                            if (parentButtonElement.querySelector('#addToDownloadList')) {
-                                removeButton();
-                                adState = true;
-                            }
+                            adState = true;
                         }
                     }
                 }
             });
-            observerAd.observe(document.querySelector("#layout > ytmusic-player-bar"), {attributes: true});
+            observerChanged.observe(document.querySelector("#movie_player > div.ytp-chrome-top > div.ytp-title > div > a"), {attributes: true});
         }
     });
     observerBar.observe(document.querySelector('html'), {attributes: true, attributeFilter: ['class']});

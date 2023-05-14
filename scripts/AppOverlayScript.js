@@ -69,7 +69,7 @@ window.addEventListener('load', () => {
 
         ipcRenderer.on('download-progression', (event, progress) => {
             document.querySelector("#progress-bar").style.width = progress.downloaded / progress.total * 100 + '%';
-            const checkmarkElement = document.querySelector(`#list-container-scroll:nth-child(${progress.element}) > div > div`);
+            const checkmarkElement = document.querySelector(`#list-container-scroll > :nth-child(${progress.element}) > div > div`);
             checkmarkElement.classList.remove('downloaded-checkmark-hidden');
             checkmarkElement.setAttribute('class', 'downloaded-checkmark');
         });

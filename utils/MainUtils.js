@@ -14,19 +14,33 @@ class MainUtils {
 
     static downloadMusic(musicUrl, pathDownload){
         return new Promise((resolve, reject) => {
-            const downloadUrl = `https://youtube.com/watch?v=${musicUrl.match(/v=([^&]+)/)[1]}`
-            exec(`${path.join(__dirname, '..', 'libraries', 'ytdl', 'yt-dlp.exe')} ${downloadUrl} -x --audio-format mp3 --audio-quality 192K -o "${pathDownload}" --ffmpeg-location "${path.join(__dirname, '..', 'libraries', 'ffmpeg')}"`, (err, stdout, stderr) => {
+            const downloadUrl = `https://music.youtube.com/watch?v=${musicUrl.match(/v=([^&]+)/)[1]}`
+            exec(`${path.join(__dirname, '..', 'libraries', 'ytdl', 'yt-dlp.exe')} ${downloadUrl} -x --audio-format mp3 --audio-quality 0 --extract-audio --add-metadata --embed-thumbnail  --ppa "EmbedThumbnail+ffmpeg_o:-c:v mjpeg -vf crop=\\"'if(gt(ih,iw),iw,ih)':'if(gt(iw,ih),ih,iw)'\\"" -o "${pathDownload}" --ffmpeg-location "${path.join(__dirname, '..', 'libraries', 'ffmpeg')}"`, (err, stdout, stderr) => {
                 if (err) {
-                    reject(err);
+                    reject(stderr);
                 }
 
                 // the *entire* stdout and stderr (buffered)
                 console.log(`stdout: ${stdout}`);
                 console.log(`stderr: ${stderr}`);
-                resolve();
+                resolve(stdout);
             });
         });
     }
+
+    static shuffleArray(startNum, endNum) {
+        let pool = [];
+        for (let i = startNum; i <= endNum; i++) {
+            pool.push(i);
+        }
+        for (let i = pool.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [pool[i], pool[j]] = [pool[j], pool[i]];
+        }
+        return pool;
+    }
+
+
 
     static removeAccents(str) {
         const accentsMap = {
