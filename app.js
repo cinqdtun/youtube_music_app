@@ -55,7 +55,7 @@ const createWindow = () => {
         }
     })
     mainWindow.addBrowserView(youtube_player_view);
-    youtube_player_view.webContents.loadURL("https://music.youtube.com");
+    youtube_player_view.webContents.loadURL("https://accounts.google.com/ServiceLogin?ltmpl=music&service=youtube&uilel=3&passive=true&continue=https%3A%2F%2Fwww.youtube.com%2Fsignin%3Faction_handle_signin%3Dtrue%26app%3Ddesktop%26hl%3Den%26next%3Dhttps%253A%252F%252Fmusic.youtube.com%252F%26feature%3D__FEATURE__&hl=en");
 
 
 
@@ -155,9 +155,31 @@ const createWindow = () => {
                     }
                     let shuffleIndex = [];
                     let criticalError = false;
-                    const startIndex = appSettings.startIndex;
-                    appSettings.startIndex += musicList.length;
+                    const startIndex = Number(appSettings.startIndex);
+                    appSettings.startIndex = startIndex + Number(musicList.length);
                     MainUtils.saveConfig(appSettings);
+                    youtube_player_view.webContents.session.cookies.get({})
+                        .then(cookies => {
+                            // Generate the Netscape formatted cookies string
+                            const cookieString = cookies.map(cookie => {
+                                const expirationDate = Math.floor(cookie.expirationDate);
+                                return `${cookie.domain}\t${cookie.hostOnly.toString().toUpperCase()}\t${cookie.path}\t${cookie.secure.toString().toUpperCase()}\t${cookie.httpOnly.toString().toUpperCase()}\t${expirationDate}\t${cookie.name}\t${cookie.value}`;
+                            }).join('\n');
+
+                            // Save cookies to a text file
+                            const filePath = 'cookies.txt';
+
+                            //fs.writeFile(filePath, cookieString, (err) => {
+                                //if (err) {
+                                    //console.error('Error saving cookies:', err);
+                                    //return;
+                                //}
+                                //console.log('Cookies saved successfully!');
+                            //});
+                        })
+                        .catch(err => {
+                            console.error('Error retrieving cookies:', err);
+                        });
                     if(appSettings.attributeIndexation === 'random'){
                         shuffleIndex = MainUtils.shuffleArray(0, musicList.length);
                     }
@@ -167,7 +189,7 @@ const createWindow = () => {
                         let downloaded = false;
                         let index;
                         if(appSettings.attributeIndexation === 'beginning'){
-                            index = i + startIndex
+                            index = i + startIndex;
                         }else if(appSettings.attributeIndexation === 'end'){
                             index = musicList.length - 1 - i + startIndex;
                         }else if(appSettings.attributeIndexation === 'random'){
