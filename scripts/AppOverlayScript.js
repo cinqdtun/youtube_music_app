@@ -27,10 +27,10 @@ window.addEventListener('load', () => {
             let musicsInfoContainer = document.createElement('div');
             musicsInfoContainer.setAttribute('class', 'musics-infos-container');
             let titleMusicLabel = document.createElement('p');
-            titleMusicLabel.setAttribute('class', 'title-music-label app-text');
+            titleMusicLabel.setAttribute('class', 'title-music-label app-text no-text-overflow-ellipsis');
             titleMusicLabel.textContent = music.musicData.title;
             let artistLabel = document.createElement('p');
-            artistLabel.setAttribute('class', 'artist-label app-text');
+            artistLabel.setAttribute('class', 'artist-label app-text no-text-overflow-ellipsis');
             artistLabel.textContent = music.musicData.artist;
             musicContainer.appendChild(thumbnailMusic);
             musicContainer.appendChild(musicsInfoContainer);

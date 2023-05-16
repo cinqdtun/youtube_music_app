@@ -33,12 +33,14 @@ html, body {
     margin-top: 10px;
     margin-bottom: 0;
     font-size: 16px;
+    max-width: 230px;
 }
 
 .artist-label{
     margin-top: 0;
     margin-bottom: 0;
     font-size: 12px;
+    max-width: 200px;
 }
 
 .delete-button{
