@@ -83,6 +83,23 @@ const createWindow = () => {
         }, 100)
     });
 
+    youtube_player_view.webContents.on('did-finish-load', () => {
+        youtube_player_view.webContents.executeJavaScript(`
+      setInterval(() => {
+        const playerAds = document.getElementsByClassName('video-ads');
+        const overlayAds = document.getElementsByClassName('ytp-ad-overlay-slot');
+        
+        if (playerAds.length > 0) {
+          playerAds[0].style.display = 'none';
+        }
+        
+        if (overlayAds.length > 0) {
+          overlayAds[0].style.display = 'none';
+        }
+      }, 100);
+    `);
+    });
+
     ipcMain.on('add-music-playlist', (event, music) => {
         const decodeMusic = JSON.parse(Buffer.from(music, 'base64').toString('utf-8'));
         console.log(decodeMusic);
