@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="stylesheet" href="ressources/settings.css">
     <link rel="stylesheet" href="ressources/kit.css">
+    <link rel="stylesheet" href="ressources/settings.css">
     <meta charset="UTF-8">
     <title>Title</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,25 +12,27 @@
     <body>
         <div id="main-container">
             <div id="settings-div">
-                <p class="app-text setting-label title-label">Settings</p>
+                <p class="app-text setting-label title-label">Download settings</p>
                 <div class="setting-div">
                     <label class="app-text setting-label default-text padding-right">Save music at</label>
-                    <strong class="app-text setting-label default-text padding-right">C:\Users\5dt1s\Downloads\$downloaded-musics</strong>
+                    <p id="location-label" class="app-text setting-label default-text padding-right">C:\Users\5dt1s\Downloads\$downloaded-musics</p>
                     <button id="choose-location-button" class="app-button">Change</button>
                 </div>
                 <div class="setting-div">
                     <label for="start-index-input" class="app-text setting-label default-text padding-right">Start index : </label>
-                    <input class="input-style" type="number" id="start-index-input" min="0" max="99999" maxlength="5" step="1" value="1">
+                    <input class="input-style" type="number" id="start-index-input" min="0" max="99999" step="1" value="1">
                 </div>
                 <div class="setting-div">
                     <label for="attribute-indexation-input" class="app-text setting-label default-text padding-right">Start indexation at </label>
                     <select id="attribute-indexation-input" class="input-style select-input">
-                        <option value="beginning" selected>Beginning</option>
+                        <option value="beginning">Beginning</option>
                         <option value="end">End</option>
+                        <option value="random">Random</option>
                     </select>
                 </div>
                 <div id="validate-button-div" class="center-element-div">
-                    <button id="validate-button" class="app-button">OK</button>
+                    <button id="validate-button" class="app-button settings-call-button">OK</button>
+                    <button id="cancel-button" class="app-button settings-call-button">Cancel</button>
                 </div>
             </div>
         </div>

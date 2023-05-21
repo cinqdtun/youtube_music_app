@@ -1,0 +1,7 @@
+node_modules
+.idea
+libraries
+config.json
+temp_music_list.mlist
+/libraries/
+build
