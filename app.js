@@ -2,11 +2,14 @@ const path = require('path');
 const fs = require('fs');
 const moment = require('moment');
 const MainUtils = require('./utils/MainUtils.js');
-const {app, BrowserView, BrowserWindow, ipcMain, dialog, Menu, MenuItem} = require('electron');
+const {app, BrowserView, BrowserWindow, ipcMain, dialog, Menu, MenuItem, globalShortcut} = require('electron');
+const os = require('os');
 
 let nextMusicId = 0;
 let musicList = [];
 let appSettings;
+let filePath = null;
+let isSaved = true;
 
 const createWindow = () => {
     let isFirstLoaded = false;
@@ -17,11 +20,13 @@ const createWindow = () => {
         const defaultSettings = {
             downloadLocation: app.getPath('music'),
             startIndex: 1,
-            attributeIndexation: 'beginning'
+            attributeIndexation: 'beginning',
+            isUnsavedWork: false
         }
         MainUtils.saveConfig(defaultSettings);
         appSettings = defaultSettings;
     }
+
     const mainWindow = new BrowserWindow({
         webPreferences: {
             nodeIntegration: false
@@ -69,7 +74,23 @@ const createWindow = () => {
     mainWindow.addBrowserView(youtube_player_view);
     youtube_player_view.webContents.loadURL("https://music.youtube.com");
 
+    function recoverData(){
+        const recoverDialog = dialog.showMessageBoxSync(mainWindow, {
+            type: 'warning',
+            buttons: ['Yes', 'No'],
+            title: 'Recover previous changes',
+            message: "The application seems to have been closed unexpectedly. Do you want to recover the previous changes?",
+            defaultId: 0
+        });
 
+        if (recoverDialog === 0) {
+            musicList = musicList = JSON.parse(fs.readFileSync(path.join(__dirname, 'temp_music_list.mlist')));
+            isSaved = false;
+            youtube_player_view.webContents.send('update-link-list', musicList);
+            app_overlay.webContents.send('update-list', musicList);
+            app_bar.webContents.send('unsaved-changes', false);
+        }
+    }
 
     app_overlay.webContents.once('dom-ready', () => {
         setTimeout(() => {
@@ -77,6 +98,11 @@ const createWindow = () => {
             app_overlay.setAutoResize({width: false, height: true});
             if(isFirstLoaded){
                 mainWindow.show();
+                if(appSettings.isUnsavedWork) {
+                    setTimeout(() => {
+                        recoverData();
+                    }, 2000);
+                }
             }else{
                 isFirstLoaded = true;
             }
@@ -89,6 +115,11 @@ const createWindow = () => {
             youtube_player_view.setAutoResize({width: true, height: true});
             if(isFirstLoaded){
                 mainWindow.show();
+                if(appSettings.isUnsavedWork) {
+                    setTimeout(() => {
+                        recoverData();
+                    }, 2000);
+                }
             }else{
                 isFirstLoaded = true;
             }
@@ -102,14 +133,64 @@ const createWindow = () => {
         }, 100);
     });
 
+    function saveAs(){
+        const dialogResult = dialog.showSaveDialogSync(mainWindow, {
+            title: "Save Music List",
+            defaultPath: path.join(os.homedir(), 'documents') + '/untitled.mlist',
+            filters: [
+                {name: 'Music List', extensions: ['mlist']}
+            ]
+        });
+
+        if(dialogResult){
+            fs.writeFileSync(dialogResult, JSON.stringify(musicList, null, 2));
+            app_bar.webContents.send('title-update', path.basename(dialogResult));
+            filePath = dialogResult;
+            isSaved = true;
+            appSettings.isUnsavedWork = false;
+            MainUtils.saveConfig(appSettings);
+        }
+    }
+
+    function save(){
+        if(filePath === null){
+            saveAs();
+        }else{
+            fs.writeFileSync(filePath, JSON.stringify(musicList, null, 2));
+            app_bar.webContents.send('unsaved-changes', false);
+            isSaved = true;
+            appSettings.isUnsavedWork = false;
+            MainUtils.saveConfig(appSettings);
+        }
+    }
+
+    function open(){
+        const dialogResult = dialog.showOpenDialogSync(mainWindow, {
+            title: "Open Music List",
+            defaultPath: path.join(os.homedir(), 'documents'),
+            filters: [
+                {name: 'Music List', extensions: ['mlist']}
+            ]
+        });
+
+        if(dialogResult){
+            musicList = JSON.parse(fs.readFileSync(dialogResult[0]));
+            youtube_player_view.webContents.send('update-link-list', musicList);
+            app_overlay.webContents.send('update-list', musicList);
+            app_bar.webContents.send('title-update', path.basename(dialogResult[0]));
+            filePath = dialogResult[0];
+            isSaved = true;
+            appSettings.isUnsavedWork = false;
+            MainUtils.saveConfig(appSettings);
+        }
+    }
+
     const fileMenu = new Menu();
-    fileMenu.append(new MenuItem({ label: 'Open', click: () => {
+    fileMenu.append(new MenuItem({ label: 'Open', accelerator:'CommandOrControl+O', click: open}));
 
-        }}));
+    fileMenu.append(new MenuItem({ label: 'Save as', accelerator: 'CommandOrControl+Shift+S', click: saveAs}));
 
-    fileMenu.append(new MenuItem({ label: 'Save', click: () => {
-
-        }}));
+    fileMenu.append(new MenuItem({ label: 'Save', accelerator: 'CommandOrControl+S', click: save}));
 
     fileMenu.append(new MenuItem({ label: 'Settings', click: () => {
             const parentBounds = mainWindow.getBounds();
@@ -147,8 +228,28 @@ const createWindow = () => {
             });
         }}));
 
+    const developerMenu = new Menu();
+
+    developerMenu.append(new MenuItem({ label: 'Toggle YI Developer Tools', click: () => {
+            const devtools = new BrowserWindow();
+            youtube_player_view.webContents.setDevToolsWebContents(devtools.webContents);
+            youtube_player_view.webContents.openDevTools({mode: 'detach'});
+    }}));
+
+    developerMenu.append(new MenuItem({ label: 'Toggle AO Developer Tools', click: () => {
+            const devtools = new BrowserWindow();
+            app_overlay.webContents.setDevToolsWebContents(devtools.webContents);
+            app_overlay.webContents.openDevTools({mode: 'detach'});
+    }}));
+    developerMenu.append(new MenuItem({ label: 'Toggle AB Developer Tools', click: () => {
+            const devtools = new BrowserWindow();
+            app_bar.webContents.setDevToolsWebContents(devtools.webContents);
+            app_bar.webContents.openDevTools({mode: 'detach'});
+    }}));
+
     const dropdownMenu = Menu.buildFromTemplate([
-        new MenuItem({ label: 'Files ', submenu: fileMenu})
+        new MenuItem({ label: 'Files ', submenu: fileMenu}),
+        new MenuItem({label: 'Developer Tools', submenu: developerMenu})
     ]);
 
     ipcMain.on('show-menu', () => {
@@ -169,7 +270,12 @@ const createWindow = () => {
 
         nextMusicId++;
         youtube_player_view.webContents.send('update-link-list', musicList);
-        app_overlay.webContents.send('update-list', musicList)
+        app_overlay.webContents.send('update-list', musicList);
+        app_bar.webContents.send('unsaved-changes', true);
+        isSaved = false;
+        fs.writeFileSync(path.join(__dirname, 'temp_music_list.mlist'), JSON.stringify(musicList, null, 2));
+        appSettings.isUnsavedWork = true;
+        MainUtils.saveConfig(appSettings);
     });
 
     ipcMain.on('delete-music', (event, musicId) => {
@@ -177,7 +283,12 @@ const createWindow = () => {
             if(musicList[i].id === musicId){
                 musicList.splice(i, 1);
                 youtube_player_view.webContents.send('update-link-list', musicList);
-                app_overlay.webContents.send('update-list', musicList)
+                app_overlay.webContents.send('update-list', musicList);
+                app_bar.webContents.send('unsaved-changes', true);
+                isSaved = false;
+                fs.writeFileSync(path.join(__dirname, 'temp_music_list.mlist'), JSON.stringify(musicList, null, 2));
+                appSettings.isUnsavedWork = true;
+                MainUtils.saveConfig(appSettings);
                 break;
             }
         }
@@ -231,7 +342,7 @@ const createWindow = () => {
                     let shuffleIndex = [];
                     let criticalError = false;
                     const startIndex = appSettings.startIndex;
-                    appSettings.startIndex += musicList.length;
+                    appSettings.startIndex = Number(appSettings.startIndex) + Number(musicList.length);
                     MainUtils.saveConfig(appSettings);
                     if(appSettings.attributeIndexation === 'random'){
                         shuffleIndex = MainUtils.shuffleArray(0, musicList.length);
@@ -286,15 +397,39 @@ const createWindow = () => {
 
     mainWindow.on('close', (event) => {
         event.preventDefault();
-        const confirmDialog = dialog.showMessageBoxSync(mainWindow, {
-            type: 'question',
-            buttons: ['Yes', 'No'],
-            title: 'Confirm',
-            message: 'Are you sure you want to quit?',
-            defaultId: 1
-        });
+        if(!isSaved){
+            const confirmDialog = dialog.showMessageBoxSync(mainWindow, {
+                type: 'warning',
+                buttons: ['Save', "Don't save", 'Cancel'],
+                title: 'Unsaved changes',
+                message: "Some changes aren't saved !\nDo you want to save ?",
+                defaultId: 0
+            });
 
-        if (confirmDialog === 0) {
+            if (confirmDialog === 0) {
+                save();
+                if(!isSaved){
+                    mainWindow.close();
+                }else {
+                    globalShortcut.unregister('CommandOrControl+S');
+                    globalShortcut.unregister('CommandOrControl+Shift+S');
+                    globalShortcut.unregister('CommandOrControl+O');
+                    mainWindow.destroy();
+                    app.exit();
+                }
+            }else if(confirmDialog === 1){
+                appSettings.isUnsavedWork = false;
+                MainUtils.saveConfig(appSettings);
+                globalShortcut.unregister('CommandOrControl+S');
+                globalShortcut.unregister('CommandOrControl+Shift+S');
+                globalShortcut.unregister('CommandOrControl+O');
+                mainWindow.destroy();
+                app.exit();
+            }
+        }else{
+            globalShortcut.unregister('CommandOrControl+S');
+            globalShortcut.unregister('CommandOrControl+Shift+S');
+            globalShortcut.unregister('CommandOrControl+O');
             mainWindow.destroy();
             app.exit();
         }
@@ -331,9 +466,23 @@ const createWindow = () => {
         });
     });
 
-    const devtools = new BrowserWindow();
-    app_bar.webContents.setDevToolsWebContents(devtools.webContents);
-    app_bar.webContents.openDevTools({mode: 'detach'});
+    globalShortcut.register('CommandOrControl+O', () => {
+        if(mainWindow.isFocused()) {
+            open();
+        }
+    });
+
+    globalShortcut.register('CommandOrControl+Shift+S', () => {
+        if(mainWindow.isFocused()) {
+            saveAs()
+        }
+    });
+
+    globalShortcut.register('CommandOrControl+S', () => {
+        if(mainWindow.isFocused()) {
+            save();
+        }
+    });
 }
 
 app.whenReady().then(() => {

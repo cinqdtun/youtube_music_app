@@ -53,25 +53,26 @@ window.addEventListener('load', () => {
             }
             musicListContainer.appendChild(musicContainer);
         }
+        document.querySelector("#music-number-label").textContent = `Musics: ${list.length}`;
+    });
 
-        ipcRenderer.on('starting-downloading', () => {
-            isDownloading = true;
-            document.querySelector("#search-controls").style.visibility = 'hidden';
-            document.querySelector("#download-controls").style.visibility = 'visible';
-        });
+    ipcRenderer.on('starting-downloading', () => {
+        isDownloading = true;
+        document.querySelector("#search-controls").style.visibility = 'hidden';
+        document.querySelector("#download-controls").style.visibility = 'visible';
+    });
 
-        ipcRenderer.on('finished-downloading', () => {
-            isDownloading = false;
-            document.querySelector("#search-controls").style.visibility = 'visible';
-            document.querySelector("#download-controls").style.visibility = 'hidden';
-            document.querySelector("#progress-bar").style.width = '0';
-        });
+    ipcRenderer.on('finished-downloading', () => {
+        isDownloading = false;
+        document.querySelector("#search-controls").style.visibility = 'visible';
+        document.querySelector("#download-controls").style.visibility = 'hidden';
+        document.querySelector("#progress-bar").style.width = '0';
+    });
 
-        ipcRenderer.on('download-progression', (event, progress) => {
-            document.querySelector("#progress-bar").style.width = progress.downloaded / progress.total * 100 + '%';
-            const checkmarkElement = document.querySelector(`#list-container-scroll > :nth-child(${progress.element}) > div > div`);
-            checkmarkElement.classList.remove('downloaded-checkmark-hidden');
-            checkmarkElement.setAttribute('class', 'downloaded-checkmark');
-        });
+    ipcRenderer.on('download-progression', (event, progress) => {
+        document.querySelector("#progress-bar").style.width = progress.downloaded / progress.total * 100 + '%';
+        const checkmarkElement = document.querySelector(`#list-container-scroll > :nth-child(${progress.element}) > div > div`);
+        checkmarkElement.classList.remove('downloaded-checkmark-hidden');
+        checkmarkElement.setAttribute('class', 'downloaded-checkmark');
     });
 });

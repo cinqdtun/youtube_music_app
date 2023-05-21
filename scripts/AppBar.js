@@ -4,7 +4,7 @@ window.addEventListener('load', () => {
     const closeBtn = document.querySelector('.window-control-close');
     const maximizeBtn = document.querySelector('.window-control-maximize');
     const minimizeBtn = document.querySelector('.window-control-minimize');
-
+    let isUnsaved = false;
 
 
     closeBtn.addEventListener('click', () => {
@@ -24,7 +24,20 @@ window.addEventListener('load', () => {
     });
 
     ipcRenderer.on('title-update', (event, title) => {
-        document.querySelector("#title").textContent = title;
+        document.querySelector("#list-name-container").textContent = title;
+        isUnsaved = false;
+    });
+
+    ipcRenderer.on('unsaved-changes', (event, state) => {
+        if(state && !isUnsaved) {
+            document.querySelector("#list-name-container").textContent += ' *';
+            isUnsaved = true;
+        }else if(!state){
+            if(isUnsaved) {
+                document.querySelector("#list-name-container").textContent = document.querySelector("#list-name-container").textContent.replace(' *', '');
+            }
+            isUnsaved = false;
+        }
     });
 
 });
