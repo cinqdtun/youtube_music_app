@@ -86,7 +86,7 @@ const createWindow = () => {
         });
 
         if (recoverDialog === 0) {
-            musicList = musicList = JSON.parse(fs.readFileSync(path.join(__dirname, 'temp_music_list.mlist')));
+            musicList = musicList = JSON.parse(fs.readFileSync(path.join(exePath, 'temp_music_list.mlist')));
             isSaved = false;
             youtube_player_view.webContents.send('update-link-list', musicList);
             app_overlay.webContents.send('update-list', musicList);
