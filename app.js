@@ -11,10 +11,12 @@ let appSettings;
 let filePath = null;
 let isSaved = true;
 
+const exePath = app.isPackaged ? path.dirname(process.execPath) : path.resolve(__dirname);
+
 const createWindow = () => {
     let isFirstLoaded = false;
 
-    if (fs.existsSync('config.json')) {
+    if (fs.existsSync(path.join(exePath, 'config.json'))) {
         appSettings = MainUtils.loadConfig();
     } else {
         const defaultSettings = {
@@ -89,6 +91,22 @@ const createWindow = () => {
             youtube_player_view.webContents.send('update-link-list', musicList);
             app_overlay.webContents.send('update-list', musicList);
             app_bar.webContents.send('unsaved-changes', false);
+        }else{
+            isSaved = true;
+            appSettings.isUnsavedWork = false;
+            MainUtils.saveConfig(appSettings);
+        }
+    }
+
+    function processArgs(){
+        for(let i = 0; i < process.argv.length; i++){
+            if(process.argv[i] === '-o' && process.argv[i + 1] !== undefined){
+                musicList = musicList = JSON.parse(fs.readFileSync(process.argv[i + 1]));
+                filePath = process.argv[i + 1];
+                youtube_player_view.webContents.send('update-link-list', musicList);
+                app_overlay.webContents.send('update-list', musicList);
+                app_bar.webContents.send('title-update', path.basename(filePath));
+            }
         }
     }
 
@@ -98,6 +116,7 @@ const createWindow = () => {
             app_overlay.setAutoResize({width: false, height: true});
             if(isFirstLoaded){
                 mainWindow.show();
+                processArgs();
                 if(appSettings.isUnsavedWork) {
                     setTimeout(() => {
                         recoverData();
@@ -115,6 +134,7 @@ const createWindow = () => {
             youtube_player_view.setAutoResize({width: true, height: true});
             if(isFirstLoaded){
                 mainWindow.show();
+                processArgs();
                 if(appSettings.isUnsavedWork) {
                     setTimeout(() => {
                         recoverData();
@@ -273,7 +293,7 @@ const createWindow = () => {
         app_overlay.webContents.send('update-list', musicList);
         app_bar.webContents.send('unsaved-changes', true);
         isSaved = false;
-        fs.writeFileSync(path.join(__dirname, 'temp_music_list.mlist'), JSON.stringify(musicList, null, 2));
+        fs.writeFileSync(path.join(exePath, 'temp_music_list.mlist'), JSON.stringify(musicList, null, 2));
         appSettings.isUnsavedWork = true;
         MainUtils.saveConfig(appSettings);
     });
@@ -286,7 +306,7 @@ const createWindow = () => {
                 app_overlay.webContents.send('update-list', musicList);
                 app_bar.webContents.send('unsaved-changes', true);
                 isSaved = false;
-                fs.writeFileSync(path.join(__dirname, 'temp_music_list.mlist'), JSON.stringify(musicList, null, 2));
+                fs.writeFileSync(path.join(exePath, 'temp_music_list.mlist'), JSON.stringify(musicList, null, 2));
                 appSettings.isUnsavedWork = true;
                 MainUtils.saveConfig(appSettings);
                 break;
@@ -460,6 +480,10 @@ const createWindow = () => {
         return appSettings;
     });
 
+    ipcMain.handle('get-musics', () => {
+        return musicList;
+    });
+
     ipcMain.handle('open-directory-dialog', async () => {
         return await dialog.showOpenDialog({
             properties: ['openDirectory'],
@@ -486,5 +510,45 @@ const createWindow = () => {
 }
 
 app.whenReady().then(() => {
+    for(let i = 0; i < process.argv.length; i++){
+        if(process.argv[i] === '-o' && process.argv[i + 1] !== undefined){
+            fs.access(process.argv[i + 1], fs.constants.F_OK, (err) => {
+                if (err) {
+                    app.exit();
+                }
+            });
+            if (path.extname(process.argv[i + 1]) !== '.mlist') {
+                app.exit();
+            }
+            try{
+                const file = JSON.parse(fs.readFileSync(process.argv[i + 1], 'utf-8'));
+                if (Array.isArray(file)) {
+                    // Iterate over the elements in the array
+                    for (const element of file) {
+                        // Check if the element has the desired structure
+                        if (!(
+                            element &&
+                            typeof element === 'object' &&
+                            element.hasOwnProperty('id') &&
+                            element.hasOwnProperty('musicData') &&
+                            typeof element.musicData === 'object' &&
+                            element.musicData.hasOwnProperty('thumbnail') &&
+                            element.musicData.hasOwnProperty('title') &&
+                            element.musicData.hasOwnProperty('artist') &&
+                            element.musicData.hasOwnProperty('link')
+                        ))
+                        {
+                            app.exit(); // Exit the loop if an element doesn't match the structure
+                        }
+                    }
+                } else {
+                    console.log('Object does not have the specified array property');
+                }
+            }catch (e) {
+                app.exit();
+            }
+            break;
+        }
+    }
     createWindow();
 });

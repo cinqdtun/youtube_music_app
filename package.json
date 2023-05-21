@@ -1,19 +1,36 @@
 {
-  "name": "youtube_music_app",
+  "name": "youtube_music_downloader",
+  "main": "app.js",
   "version": "1.0.0",
   "description": "",
-  "main": "app.js",
   "devDependencies": {
-    "electron": "^24.1.3"
+    "electron": "^24.1.3",
+    "electron-builder": "^23.6.0"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "electron ."
+    "start": "electron .",
+    "dist": "electron-builder"
   },
   "keywords": [],
-  "author": "",
+  "author": "5dt1",
   "license": "ISC",
   "dependencies": {
     "moment": "^2.29.4"
+  },
+  "build": {
+    "appId": "com.5dt1.youtube_music_downloader",
+    "productName": "Youtube Music Downloader",
+    "target": "nsis",
+    "directories": {
+      "output": "build"
+    },
+    "nsis": {
+      "allowToChangeInstallationDirectory": true,
+      "oneClick": false,
+      "include": "build/installer.nsh",
+      "allowElevation": true
+    },
+    "icon": "build/youtube_music_downloader.ico"
   }
 }

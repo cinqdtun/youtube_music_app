@@ -1,15 +1,16 @@
 const fs = require('fs');
 const { exec } = require('child_process');
 const path = require('path');
+const { app } = require('electron');
 class MainUtils {
-    function
+    static exePath = app.isPackaged ? path.dirname(process.execPath) : path.resolve(__dirname);
 
     static saveConfig(jsonConfig) {
-        fs.writeFileSync('./config.json', JSON.stringify(jsonConfig, null, 2));
+        fs.writeFileSync(path.join(this.exePath, 'config.json'), JSON.stringify(jsonConfig, null, 2));
     }
 
     static loadConfig() {
-        return JSON.parse(fs.readFileSync('./config.json', 'utf8'));
+        return JSON.parse(fs.readFileSync(path.join(this.exePath, '..','config.json'), 'utf8'));
     }
 
     static downloadMusic(musicUrl, pathDownload){

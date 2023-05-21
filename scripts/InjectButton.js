@@ -10,6 +10,9 @@ window.addEventListener('load', async () => {
     while (!document.querySelector("#movie_player > div.ytp-chrome-top > div.ytp-title > div > a")){
         await delay(200);
     }
+    ipcRenderer.invoke("get-musics").then((result) => {
+        musicList = result;
+    });
 
     document.querySelector("#right-content").style.setProperty('display', 'none');
 
@@ -105,7 +108,7 @@ window.addEventListener('load', async () => {
                         thumbnail: document.querySelector("#layout > ytmusic-player-bar > div.middle-controls.style-scope.ytmusic-player-bar > div.thumbnail-image-wrapper.style-scope.ytmusic-player-bar > img").getAttribute('src'),
                         title: document.querySelector("#layout > ytmusic-player-bar > div.middle-controls.style-scope.ytmusic-player-bar > div.content-info-wrapper.style-scope.ytmusic-player-bar > yt-formatted-string").textContent,
                         artist: document.querySelector("#layout > ytmusic-player-bar > div.middle-controls.style-scope.ytmusic-player-bar > div.content-info-wrapper.style-scope.ytmusic-player-bar > span > span.subtitle.style-scope.ytmusic-player-bar > yt-formatted-string > :nth-child(1)").textContent,
-                        link: document.querySelector("#movie_player > div.ytp-chrome-top > div.ytp-title > div > a").getAttribute('href')
+                        link: 'https://music.youtube.com/watch?v=' + getVideoIdFromUrl(document.querySelector("#movie_player > div.ytp-chrome-top > div.ytp-title > div > a").getAttribute('href'))
                     };
                     ipcRenderer.send('add-music-playlist', Buffer.from(JSON.stringify(music), 'utf-8').toString('base64'));
                 })
@@ -129,8 +132,14 @@ window.addEventListener('load', async () => {
         if (isDownloading) return true;
         const uriCurrentMusic = document.querySelector("#movie_player > div.ytp-chrome-top > div.ytp-title > div > a").getAttribute('href');
         for (let i = 0; i < musicList.length; i++) {
-            if (uriCurrentMusic === musicList[i].musicData.link) return true;
+            if (getVideoIdFromUrl(uriCurrentMusic) === getVideoIdFromUrl(musicList[i].musicData.link)) return true;
         }
         return false;
+    }
+
+    function getVideoIdFromUrl(url) {
+        const regex = /v=([a-zA-Z0-9_-]+)/;
+        const match = regex.exec(url);
+        return match[1];
     }
 });
