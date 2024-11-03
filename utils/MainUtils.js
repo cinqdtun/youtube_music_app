@@ -16,7 +16,7 @@ class MainUtils {
     static downloadMusic(musicUrl, pathDownload){
         return new Promise((resolve, reject) => {
             const downloadUrl = `https://music.youtube.com/watch?v=${musicUrl.match(/v=([^&]+)/)[1]}`
-            exec(`"${path.join(this.exePath, 'libraries', 'ytdl', 'yt-dlp.exe')}" ${downloadUrl} -x --audio-format mp3 --audio-quality 0 --extract-audio --add-metadata --embed-thumbnail  --ppa "EmbedThumbnail+ffmpeg_o:-c:v mjpeg -vf crop=\\"'if(gt(ih,iw),iw,ih)':'if(gt(iw,ih),ih,iw)'\\"" -o "${pathDownload}" --ffmpeg-location "${path.join(this.exePath , 'libraries', 'ffmpeg')}"`, (err, stdout, stderr) => {
+            exec(`"${path.join(this.exePath, 'libraries', 'ytdl', 'yt-dlp.exe')}" ${downloadUrl} -x --audio-format mp3 --audio-quality 0 --add-metadata --embed-thumbnail -o "${pathDownload}" --user-agent "Mozilla/5.0 (Android 14; Mobile; rv:128.0) Gecko/128.0 Firefox/128.0" --ffmpeg-location "${path.join(this.exePath , 'libraries', 'ffmpeg')}"`, (err, stdout, stderr) => {
                 if (err) {
 
                     reject(stderr);

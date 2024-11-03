@@ -386,7 +386,7 @@ const createWindow = () => {
                                 youtube_player_view.webContents.send('finished-downloading');
                                 return;
                             }
-                            await MainUtils.downloadMusic(music.musicData.link, path.join(folderPath, `${index} ${music.musicData.title}-${music.musicData.artist}.mp3`)).then(() => {
+                            await MainUtils.downloadMusic(music.musicData.link, path.join(folderPath, `${index} ${music.musicData.title}-${music.musicData.artist}.mp4`)).then(() => {
                                 app_overlay.webContents.send('download-progression', {downloaded: i + 1, total: musicList.length, element: i + 1});
                                 downloaded = true;
                             }).catch((error) => {
